@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import Grocery, { IGrocery } from "../models/grocery";
+import * as groceryLogic from "../logic/grocery/logic";
 export const groceryRouter = express.Router();
 
 groceryRouter.use(express.json());
@@ -8,7 +9,7 @@ groceryRouter.get("/:id", async (req: Request, res: Response) => {
   const id = req?.params?.id;
 
   try {
-    const grocery = await Grocery.findById(id);
+    const grocery = await groceryLogic.getGroceryById(id);
 
     if (grocery) {
       res.status(200).send(grocery);
@@ -22,7 +23,7 @@ groceryRouter.get("/:id", async (req: Request, res: Response) => {
 
 groceryRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const groceryArray = await Grocery.find({});
+    const groceryArray = await groceryLogic.getAllGroceries();
     if (groceryArray) {
       res.status(200).send(groceryArray);
     }
@@ -32,10 +33,7 @@ groceryRouter.get("/", async (req: Request, res: Response) => {
 });
 groceryRouter.post("/", async (req: Request, res: Response) => {
   try {
-    const newGrocery = new Grocery({ ...req.body });
-    console.log(newGrocery);
-    const result = await newGrocery.save();
-
+    const result = await groceryLogic.addGrocery({ ...req.body });
     result
       ? res
           .status(201)
@@ -50,9 +48,7 @@ groceryRouter.put("/:id", async (req: Request, res: Response) => {
   const id = req?.params?.id;
 
   try {
-    const updatedGrocery = req.body;
-    await Grocery.updateOne({ id }, updatedGrocery);
-    const result = await Grocery.findById(id);
+    const result = await groceryLogic.updateGrocery(id, { ...req.body });
 
     result
       ? res.status(200).send(`Successfully updated grocery with id ${id}`)
@@ -64,10 +60,8 @@ groceryRouter.put("/:id", async (req: Request, res: Response) => {
 });
 groceryRouter.delete("/:id", async (req: Request, res: Response) => {
   const id = req?.params?.id;
-
   try {
-    const result = await Grocery.findByIdAndDelete(id);
-
+    const result = await groceryLogic.deleteGrocery(id);
     if (result) {
       res.status(202).send(`Successfully removed grocery with id ${id}`);
     } else if (!result) {

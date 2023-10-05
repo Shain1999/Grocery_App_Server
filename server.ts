@@ -1,6 +1,9 @@
+import { categoryRouter } from "./src/controllers/categoryContoller";
 import { groceryRouter } from "./src/controllers/groceryController";
 import { connectToDbMongoose } from "./src/db/mongoose.connect";
 import * as dotenv from "dotenv";
+import { verifyAccessToken } from "./src/filters/auth.middleware";
+import { authRouter } from "./src/controllers/authController";
 const cookieParser = require("cookie-parser");
 
 dotenv.config();
@@ -14,7 +17,10 @@ connectToDbMongoose()
     server.use(cors({ origin: "http://localhost:3000" }));
     server.use(cookieParser());
     server.use(express.json());
+    server.use(verifyAccessToken);
+    server.use("/auth", authRouter);
     server.use("/grocery", groceryRouter);
+    server.use("/category", categoryRouter);
     server.listen(PORT, () =>
       console.log(`Listening on http://localhost:${PORT}`)
     );
